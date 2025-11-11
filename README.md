@@ -36,7 +36,7 @@ cores = ["vermelho", "verde", "azul"];
 
 exemplo
 
-nome = "Alpha Dental";
+nome = "C--";
 idades = [10, 20, 30];
 
 print(nome);
