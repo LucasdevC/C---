@@ -10,7 +10,7 @@ C-- é uma linguagem **simples e minimalista** que suporta variáveis, números,
 ```adl
 
 x = 10;
-nome = "Alpha Dental";
+nome = "Ola mundo";
 
 exibidor de dados
 
