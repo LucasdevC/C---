@@ -1,4 +1,5 @@
-# C--
+()
+
 
 C-- é uma linguagem **simples e minimalista** que suporta variáveis, números, strings, arrays, operações matemáticas básicas e impressão na tela.
 
