@@ -46,6 +46,10 @@ print(idades[1]);
 x = 5 * (2 + 3);
 print(x);
 
+cores = ["vermelho", "verde", "azul"];
+print(cores[2]);
+
+
 // Operações e arrays
 cores = ["vermelho", "verde", "azul"];
 print(cores[2]);
