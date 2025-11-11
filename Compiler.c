@@ -1,10 +1,8 @@
-// Compiler.c — AlphaDelta simplificado (print, strings, arrays, números)
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
-/* Tokens */
 typedef enum {
     T_EOF, T_NUM, T_STR, T_IDENT,
     T_PLUS, T_MINUS, T_MUL, T_DIV,
@@ -18,15 +16,12 @@ typedef struct { TokenType type; double num; char *s; } Token;
 char *src; size_t pos = 0;
 Token curtok;
 
-/* Helpers */
 void error(const char *msg) { fprintf(stderr, "Erro: %s\n", msg); exit(1); }
 
-/* Lexer */
 void next_token() {
     while (isspace((unsigned char)src[pos])) pos++;
     if (src[pos] == '\0') { curtok.type = T_EOF; return; }
 
-    /* string literal */
     if (src[pos] == '"') {
         pos++;
         size_t start = pos;
@@ -39,13 +34,11 @@ void next_token() {
         pos++; curtok.type = T_STR; return;
     }
 
-    /* number */
     if (isdigit((unsigned char)src[pos]) || (src[pos] == '.' && isdigit((unsigned char)src[pos+1]))) {
         char *end; curtok.num = strtod(src + pos, &end);
         pos = end - src; curtok.type = T_NUM; return;
     }
 
-    /* identifier */
     if (isalpha((unsigned char)src[pos]) || src[pos] == '_') {
         size_t start = pos;
         while (isalnum((unsigned char)src[pos]) || src[pos] == '_') pos++;
@@ -89,11 +82,9 @@ void next_token() {
     }
 }
 
-/* Parser helpers */
 int accept(TokenType t) { if (curtok.type == t) { next_token(); return 1; } return 0; }
 void expect(TokenType t) { if (!accept(t)) { fprintf(stderr,"Syntax error: expected %d\n", t); exit(1); } }
 
-/* AST node types */
 typedef enum { N_NUM, N_STR, N_VAR, N_BIN, N_ASSIGN, N_PRINT, N_EXPR_STMT, N_ARR_LITERAL, N_ARR_ACCESS } NodeType;
 typedef struct Node {
     NodeType type;
@@ -104,7 +95,6 @@ typedef struct Node {
     struct Node *next;
 } Node;
 
-/* Node constructors */
 Node* newnum(double v){ Node *n=calloc(1,sizeof(Node)); n->type=N_NUM; n->num=v; return n; }
 Node* newstr(char *s){ Node *n=calloc(1,sizeof(Node)); n->type=N_STR; n->s=s; return n; }
 Node* newvar(char *name){ Node *n=calloc(1,sizeof(Node)); n->type=N_VAR; n->s=name; return n; }
@@ -114,15 +104,12 @@ Node* newprint(Node *expr){ Node *n=calloc(1,sizeof(Node)); n->type=N_PRINT; n->
 Node* newexprstmt(Node *e){ Node *n=calloc(1,sizeof(Node)); n->type=N_EXPR_STMT; n->left=e; return n; }
 Node* newarrlit(){ Node *n=calloc(1,sizeof(Node)); n->type=N_ARR_LITERAL; return n; }
 Node* newarraccess(char *name, Node *idx){ Node *n=calloc(1,sizeof(Node)); n->type=N_ARR_ACCESS; n->s=name; n->left=idx; return n; }
-
-/* Forward declarations */
 Node* parse_block();
 Node* parse_stmt();
 Node* parse_expr();
 Node* parse_term();
 Node* parse_factor();
 
-/* parse block */
 Node* parse_block() {
     Node *head=NULL,*tail=NULL;
     while(curtok.type!=T_EOF){
@@ -132,7 +119,6 @@ Node* parse_block() {
     return head;
 }
 
-/* parse statement */
 Node* parse_stmt() {
     if(curtok.type==T_IDENT && strcmp(curtok.s,"print")==0){
         next_token(); expect(T_LPAREN);
@@ -152,7 +138,6 @@ Node* parse_stmt() {
     return newexprstmt(e);
 }
 
-/* parse expressions */
 Node* parse_expr(){
     Node *n=parse_term();
     while(curtok.type==T_PLUS||curtok.type==T_MINUS){
@@ -194,7 +179,6 @@ Node* parse_factor(){
     return NULL;
 }
 
-/* --- Runtime --- */
 typedef enum { VT_NUM, VT_STR, VT_ARR } VType;
 typedef struct Value { VType t; double num; char *s; struct Value **items; size_t len; } Value;
 
@@ -207,7 +191,6 @@ Var vars[2048]; int varcount=0;
 void set_var_val(char *name, Value *val){ for(int i=0;i<varcount;i++) if(strcmp(vars[i].name,name)==0){ vars[i].val=val; return; } vars[varcount].name=strdup(name); vars[varcount].val=val; varcount++; }
 Value* get_var_val(char *name){ for(int i=0;i<varcount;i++) if(strcmp(vars[i].name,name)==0) return vars[i].val; return NULL; }
 
-/* Evaluate */
 Value* eval_node(Node *n);
 
 Value* eval_array_literal(Node *arr){
@@ -243,7 +226,6 @@ Value* eval_node(Node *n){
     }
 }
 
-/* --- Main --- */
 int main(int argc, char **argv){
     if(argc<2){ fprintf(stderr,"Uso: %s file.adl\n",argv[0]); return 1; }
     FILE *f=fopen(argv[1],"rb"); if(!f){ perror("open"); return 1; }
